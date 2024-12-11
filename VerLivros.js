@@ -38,7 +38,7 @@ export default function VerLivros() {
               <View key={book.id} style={styles.bookItem}>
                 <TouchableOpacity onPress={() => Expand(book.id)}>
                   <Text style={styles.bookButton}>
-                    Título do livro: {book.titulo}
+                     Livro - {book.titulo}
                   </Text>
                 </TouchableOpacity>
 

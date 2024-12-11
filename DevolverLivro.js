@@ -1,251 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { putBook2, seeBooks } from './api/Api';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+// Defina a URL base da sua API
+const BASE_URL = 'http://localhost:5001';
 
+// Função para devolver o livro
+const devolverLivro = async (livroId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/devolver-livro`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ livro_id: livroId }), // Apenas o ID do livro é enviado
+    });
 
+    const data = await response.json();
+    if (response.ok) {
+      Alert.alert('Sucesso', data.message);
+    } else {
+      Alert.alert('Erro', data.error || 'Erro ao devolver livro');
+    }
+  } catch (error) {
+    console.error('Erro ao devolver livro:', error);
+    Alert.alert('Erro', 'Erro ao conectar com o servidor');
+  }
+};
 
 export default function DevolverLivro() {
-  const [id, setId] = useState('');
-  const [usuarioId, setUsuarioId] = useState('');
-  const [books, setBooks] = useState([]);
-  const [expandedBook, setExpandedBook] = useState(null);
   const navigation = useNavigation();
+  const [livroId, setLivroId] = useState('');
 
-
-
-
-
-
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await seeBooks();
-        const borrowedBooks = response.filter(book => book.quantidadeEmprestada > 0);
-        setBooks(borrowedBooks);
-      } catch (error) {
-        console.error('Erro ao buscar livros:', error);
-      }
-    };
-
-
-
-
-    fetchBooks();
-  }, []);
-
-
-
-
-
-
-  const Devolver = async () => {
-    try {
-      if (!id || !usuarioId) {
-        alert('Por favor, insira um ID de livro e de usuário válidos.');
-        return;
-      }
-
-
-      await putBook2(id, usuarioId);
-      alert('Livro devolvido com sucesso!');
-      setId('');
-      setUsuarioId('');
-
-      const updatedBooks2 = await seeBooks();
-      
-      const borrowedBooks = updatedBooks2.filter(book => book.quantidadeEmprestada > 0);
-      setBooks(borrowedBooks);
-    } catch (error) {
-      console.error('Erro ao devolver livro:', error);
-      alert('Erro ao devolver livro!');
+  const handleDevolver = () => {
+    if (!livroId) {
+      Alert.alert('Erro', 'Por favor, insira o ID do livro');
+      return;
     }
+    devolverLivro(livroId);
+    setLivroId(''); // Limpa o campo de ID do livro
   };
-
-
-
-
-
-
-
-  const Expand = (bookId) => {
-    setExpandedBook(expandedBook === bookId ? null : bookId);
-  };
-
-
-
-
-
-
-
 
   return (
-    <View style={styles.body}>
+    <View style={styles.container}>
+      <Text style={styles.title}>DEVOLVER LIVRO</Text>
 
-      <View style={styles.menudevolver}>
+      <TextInput
+        style={styles.input}
+        placeholder="ID do Livro"
+        value={livroId}
+        onChangeText={setLivroId}
+        keyboardType="numeric"
+      />
 
-        <Text style={styles.title}>DEVOLVER LIVRO</Text>
-
-
-
-
-        <ScrollView>
-
-          {books.length > 0 ? (
-            books.map((book) => (
-
-
-              <View key={book.id} style={styles.bookItem}>
-
-
-
-                <TouchableOpacity onPress={() => Expand(book.id)}>
-
-                  <Text style={styles.bookButton}>
-                    Título: {book.titulo}
-                  </Text>
-
-                </TouchableOpacity>
-
-
-
-
-                {expandedBook === book.id && (
-                  <View style={styles.detalhes}>
-
-
-                    <Text style={styles.bookText}>
-                      ID do livro: {book.id}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Título: {book.titulo}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Autor: {book.autor}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Ano: {book.ano}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Quantidade disponível: {book.quantidade}
-                    </Text>
-                      
-                    <Text style={styles.bookText}>
-                      Quantidade emprestada: {book.quantidadeEmprestada}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Emprestado para usuários com ID's: {book.usuariosEmprestados.join(', ')}
-                    </Text>
-
-
-                  </View>
-                )}
-
-
-              </View>
-            ))
-
-          ) : (
-
-            <Text style={styles.bookText2}>Não há livros emprestados.</Text>
-          )}
-
-        </ScrollView>
-
-
-
-
-
-
-
-
-        <TextInput
-          style={styles.input}
-          placeholder="ID do Livro"
-          value={id}
-          onChangeText={setId}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="ID do Usuário"
-          value={usuarioId}
-          onChangeText={setUsuarioId}
-          keyboardType="numeric"
-        />
-
-        <View style={styles.buttonGroup}>
-          <Button title="Devolver livro" color="darkgreen" onPress={Devolver} />
-          <Button title="VOLTAR" color="darkgreen" onPress={() => navigation.navigate('HomePage')} />
-        </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.blackButton} onPress={handleDevolver}>
+          <Text style={styles.buttonText}>Devolver Livro</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.blackButton} onPress={() => navigation.navigate('HomePage')}>
+          <Text style={styles.buttonText}>VOLTAR</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-
-
-
-
-
-
-
-
-
-
 const styles = StyleSheet.create({
-  body: {
+  container: {
     flex: 1,
-    backgroundColor: 'rebeccapurple',
+    backgroundColor: 'white',
     padding: 16,
-  },
-  menudevolver: {
-    height: 500,
-    backgroundColor: 'rgb(128, 21, 199)',
-    padding: 30,
-    marginVertical: 20,
-    borderRadius: 8,
-    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
+    backgroundColor: 'black',
     color: 'white',
     textAlign: 'center',
-    fontSize: 20,
-    marginBottom: 30,
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  bookItem: {
-    backgroundColor: 'white',
-    padding: 12,
-    marginVertical: 8,
-    borderRadius: 4,
-  },
-  bookButton: {
-    height: 15,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'darkgreen',
-    textAlign: 'center',
-  },
-  detalhes: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: 'lightgrey',
-    borderRadius: 4,
-  },
-  bookText: {
-    fontSize: 14,
-    color: 'black',
-  },
-  bookText2: {
-    fontSize: 16,
-    color: 'white',
+    marginBottom: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   input: {
     padding: 5,
@@ -257,8 +98,22 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     color: 'black',
     borderRadius: 4,
+    width: '80%',
   },
-  buttonGroup: {
+  buttonContainer: {
+    width: '100%',
+    padding: 16,
     gap: 10,
+  },
+  blackButton: {
+    backgroundColor: 'black',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

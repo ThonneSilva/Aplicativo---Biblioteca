@@ -1,51 +1,54 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function AdicionarLivros() {
   const navigation = useNavigation();
 
-  // Estados para os campos do formulário
+  const [id, setId] = useState('');
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
   const [ano, setAno] = useState('');
   const [quantidade, setQuantidade] = useState('');
 
-  // Função para adicionar livro (simulação de envio para o servidor)
+  // Função para adicionar um livro
   const adicionarLivro = async () => {
     try {
-      console.log('Enviando dados para o servidor...');
+      // Verifica se todos os campos foram preenchidos
+      if (!id || !titulo || !autor || !ano || !quantidade) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+      }
+
+      // Envia a requisição para adicionar o livro
       const response = await fetch('http://localhost:5001/adicionar-livro', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: parseInt(id),  // Garante que o ID seja um número
           titulo,
           autor,
-          ano,
-          quantidade,
+          ano: parseInt(ano), // Garante que o ano seja um número
+          quantidade: parseInt(quantidade), // Garante que a quantidade seja um número
         }),
       });
 
-      // Verifica se a resposta foi bem-sucedida
       if (response.ok) {
-        const responseData = await response.json(); // Supondo que a resposta seja JSON
-        console.log('Livro adicionado com sucesso:', responseData);
+        const responseData = await response.json();
         alert('Livro adicionado com sucesso!');
+        setId('');
         setTitulo('');
         setAutor('');
         setAno('');
         setQuantidade('');
-        // Redireciona de volta para a tela de livros
-        navigation.navigate('VerLivros');
+        navigation.navigate('VerLivros');  // Navega para a tela onde os livros são visualizados
       } else {
         const errorData = await response.json();
-        console.error('Erro na resposta do servidor:', errorData);
         alert('Erro ao adicionar livro. Tente novamente.');
       }
     } catch (error) {
-      console.error('Erro ao adicionar livro:', error);
       alert('Erro ao adicionar livro. Verifique sua conexão ou tente novamente mais tarde.');
     }
   };
@@ -54,9 +57,15 @@ export default function AdicionarLivros() {
     <View style={styles.body}>
       <Text style={styles.title}>ADICIONAR LIVRO</Text>
 
-      {/* ScrollView para garantir rolagem do conteúdo */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="ID do livro"
+            value={id}
+            onChangeText={setId}
+            keyboardType="numeric"
+          />
           <TextInput
             style={styles.input}
             placeholder="Título do livro"
@@ -84,26 +93,16 @@ export default function AdicionarLivros() {
             keyboardType="numeric"
           />
 
-          {/* Botão para adicionar o livro */}
-          <View style={styles.button}>
-            <Button
-              title="ADICIONAR LIVRO"
-              color="darkgreen"
-              onPress={adicionarLivro}
-            />
-          </View>
+          <TouchableOpacity style={styles.button} onPress={adicionarLivro}>
+            <Text style={styles.buttonText}>ADICIONAR LIVRO</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Botão de voltar */}
       <View style={styles.buttonContainer}>
-        <View style={styles.button}>
-          <Button
-            title="VOLTAR"
-            color="darkgreen"
-            onPress={() => navigation.navigate('HomePage')}
-          />
-        </View>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('HomePage')}>
+          <Text style={styles.buttonText}>VOLTAR</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -112,29 +111,29 @@ export default function AdicionarLivros() {
 const styles = StyleSheet.create({
   body: {
     flex: 1,
-    backgroundColor: 'white', // Fundo branco para a tela
+    backgroundColor: 'white',
     padding: 16,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   title: {
-    color: '#FFFFFF', // Branco para o texto do título
+    color: '#FFFFFF',
     textAlign: 'center',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
   },
   scrollContainer: {
-    flexGrow: 1, // Garante que o conteúdo ocupe o espaço disponível
+    flexGrow: 1,
     width: '100%',
-    paddingBottom: 100, // Adiciona um padding inferior para garantir espaço para os botões
+    paddingBottom: 100,
   },
   formContainer: {
     width: '100%',
   },
   input: {
-    backgroundColor: '#2F2F2F', // Cor de fundo cinza escuro para os campos de entrada
-    color: '#E0E0E0', // Cor do texto dos campos
+    backgroundColor: '#2F2F2F',
+    color: '#E0E0E0',
     marginBottom: 12,
     padding: 10,
     borderRadius: 4,
@@ -145,10 +144,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   button: {
-    backgroundColor: '#E0E0E0', // Cinza muito claro para os botões
+    backgroundColor: 'black',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 15,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

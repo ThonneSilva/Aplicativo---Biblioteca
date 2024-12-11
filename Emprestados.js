@@ -1,199 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { seeBooks } from './api/Api';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+const BASE_URL = 'http://localhost:5001/emprestimos';  // URL para pegar todos os empréstimos
 
-
-
-
-
-export default function VerLivros() {
+export default function LivrosEmprestados() {
+  const [borrowedBooks, setBorrowedBooks] = useState([]);
+  const [loading, setLoading] = useState(true);  // Estado para controle de carregamento
+  const [error, setError] = useState(null);  // Estado para controle de erros
   const navigation = useNavigation();
-  const [books, setBooks] = useState([]);
-  const [expandedBook, setExpandedBook] = useState(null);
 
-
-
-
-
-
+  // Buscar livros emprestados
   useEffect(() => {
-    const fetchBooks = async () => {
+    const fetchBorrowedBooks = async () => {
       try {
-        const response = await seeBooks();
-        const filteredBooks = response.filter(book => book.quantidadeEmprestada > 0);
-        setBooks(filteredBooks);
+        const response = await fetch(BASE_URL);  // Requisição para obter todos os empréstimos
+        const books = await response.json();
+
+        if (response.ok) {
+          // Se a resposta for válida, verificar se a lista não está vazia
+          if (Array.isArray(books) && books.length > 0) {
+            setBorrowedBooks(books);
+          } else {
+            setError("Não há livros emprestados no momento.");
+          }
+        } else {
+          setError(books.mensagem || "Erro desconhecido ao carregar os livros.");
+        }
       } catch (error) {
-        console.error('Erro ao buscar livros:', error);
+        console.error('Erro ao buscar livros emprestados:', error);
+        setError('Erro ao carregar os livros emprestados');
+      } finally {
+        setLoading(false);  // Atualiza o estado de carregamento
       }
     };
 
-
-
-
-    fetchBooks();
+    fetchBorrowedBooks();
   }, []);
 
-
-
-
-
-
-  const toggleDetails = (bookId) => {
-    setExpandedBook(expandedBook === bookId ? null : bookId);
-  };
-
-
-
-
-
-
   return (
-    <View style={styles.body}>
+    <View style={styles.container}>
+      <Text style={styles.title}>Livros Emprestados</Text>
 
-      <View style={styles.menuview}>
-
-        <Text style={styles.title}>Ver Livros</Text>
-
-
-
-        <ScrollView>
-
-
-          {books.length > 0 ? (
-            books.map(book => (
-
+      {loading ? (
+        <ActivityIndicator size="large" color="green" />  // Indicador de carregamento enquanto busca
+      ) : error ? (
+        <Text style={styles.errorText}>{error}</Text>  // Exibe mensagem de erro, se houver
+      ) : (
+        <ScrollView style={styles.bookList}>
+          {borrowedBooks.length > 0 ? (
+            borrowedBooks.map((book) => (
               <View key={book.id} style={styles.bookItem}>
-
-
-                <TouchableOpacity onPress={() => toggleDetails(book.id)}>
-
-                  <Text style={styles.bookButton}>
-                    Título do livro: {book.titulo}
-                  </Text>
-
-                </TouchableOpacity>
-
-
-
-                {expandedBook === book.id && (
-
-                  <View style={styles.detalhes}>
-
-                    <Text style={styles.bookText}>
-                      ID do livro: {book.id}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Título: {book.titulo}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Autor: {book.autor}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Ano: {book.ano}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Quantidade disponível: {book.quantidade}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Quantidade emprestada: {book.quantidadeEmprestada}
-                    </Text>
-
-                    <Text style={styles.bookText}>
-                      Emprestado para usuários com ID's: {book.usuariosEmprestados.join(', ')}
-                    </Text>
-
-                  </View>
-
-                )}
-
+                <Text style={styles.bookText}>Título: {book.titulo}</Text>
+                <Text style={styles.bookText}>Autor: {book.autor}</Text>
+                <Text style={styles.bookText}>
+                  Quantidade Emprestada: {book.quantidadeEmprestada || '0'}
+                </Text>
+                {/* Remova o campo de usuários emprestados se não houver */}
+                {/* <Text style={styles.bookText}>
+                  Emprestado para: {book.usuariosEmprestados?.length > 0 ? book.usuariosEmprestados.join(', ') : 'Nenhum usuário'}
+                </Text> */}
               </View>
-
             ))
-
           ) : (
-
-            <Text style={styles.bookText2}>Não há livros emprestados.</Text>
-
+            <Text style={styles.bookText}>Não há livros emprestados no momento.</Text>
           )}
-
-
         </ScrollView>
+      )}
 
-
-
-
-
-          <Button
-            title="VOLTAR"
-            color="darkgreen"
-            onPress={() => navigation.navigate('HomePage')}
-          />
-
-      </View>
-
+      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+        <Text style={styles.buttonText}>Voltar</Text>
+      </TouchableOpacity>
     </View>
-
   );
 }
 
-
-
-
-
-
 const styles = StyleSheet.create({
-  body: {
+  container: {
     flex: 1,
-    backgroundColor: 'rebeccapurple',
-    padding: 16,
-  },
-  menuview: {
-    height: 500,
-    backgroundColor: 'rgb(128, 21, 199)',
-    padding: 30,
-    marginVertical: 20,
-    borderRadius: 8,
-    marginTop: 10,
+    backgroundColor: '#f0f0f0',
+    padding: 20,
   },
   title: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 20,
-    marginBottom: 30,
+    fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  bookList: {
+    marginVertical: 20,
   },
   bookItem: {
     backgroundColor: 'white',
-    padding: 12,
+    padding: 15,
     marginVertical: 8,
-    borderRadius: 4,
-  },
-  bookButton: {
-    height: 15,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'darkgreen',
-    textAlign: 'center',
-  },
-  detalhes: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: 'lightgrey',
-    borderRadius: 4,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   bookText: {
     fontSize: 16,
-    color: 'black',
+    color: '#333',
   },
-  bookText2: {
-    fontSize: 16,
+  button: {
+    backgroundColor: 'darkgreen',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
     color: 'white',
+    fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

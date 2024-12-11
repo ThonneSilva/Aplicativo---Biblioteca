@@ -8,13 +8,13 @@ export default function HomePage() {
   return (
     <View style={styles.body}>
       <View style={styles.menu}>
-        <Text style={styles.title}>📚 Biblioteca - Érico Veríssimo</Text>
+        <Text style={styles.title}>📚 Sistema - Biblioteca Érico Veríssimo</Text>
 
         <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate('VerLivros')}
         >
-          <Text style={styles.buttonText}>📖 Ver livros</Text>
+          <Text style={styles.buttonText}>📖 Livros Disponiveis</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 

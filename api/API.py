@@ -186,6 +186,9 @@ def incluir_livro():
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
 
+
+    ## rota para exlcuir um livro
+
 @app.route('/livros/<int:id>', methods=['DELETE'])
 def excluir_livro(id):
     for indice, livro in enumerate(livros):
@@ -195,21 +198,55 @@ def excluir_livro(id):
 
 
 
-# Rota para alugar um livro associado a um usuário
-@app.route('/livros/alugar/<int:id_livro>/usuario/<int:id_usuario>', methods=['POST'])
-def alugar_livro_para_usuario(id_livro, id_usuario):
+# Emprestar livros
+@app.route('/livros/alugar/<int:id_livro>', methods=['POST'])
+def alugar_livro(id_livro):
     livro = next((l for l in livros if l['id'] == id_livro), None)
-    usuario = next((u for u in usuarios if u['id'] == id_usuario), None)
 
+    # Verificar se o livro existe
     if not livro:
         return jsonify({'mensagem': 'Livro não encontrado.'}), 404
-    if not usuario:
-        return jsonify({'mensagem': 'Usuário não encontrado.'}), 404
-    if livro['quantidade'] <= 0:
-        return jsonify({'mensagem': 'Livro não disponível para aluguel.'}), 400
 
+    # Verificar se o livro está disponível
+    if livro['quantidade'] <= 0:
+        return jsonify({'mensagem': 'Livro não disponível para empréstimo.'}), 400
+
+    # Atualizar quantidade disponível e marcar como emprestado
     livro['quantidade'] -= 1
+    livro.setdefault('Emprestado', True)  # Marcar como emprestado
+    livro.setdefault('quantidadeEmprestada', 0)
+    livro['quantidadeEmprestada'] += 1
+
+    return jsonify({
+        'mensagem': 'Livro emprestado com sucesso.',
+        'livro': {
+            'id': livro['id'],
+            'titulo': livro['titulo'],
+            'quantidadeDisponivel': livro['quantidade'],
+            'quantidadeEmprestada': livro['quantidadeEmprestada']
+        }
+    }), 200
+
+
+
+
+
+
+
+
+
+
+    # Verificar se o usuário já tem este livro emprestado
+    if id_livro in usuario['livros_emprestados']:
+        return jsonify({'mensagem': 'Usuário já tem este livro emprestado.'}), 400
+
+    # Atualizando quantidade do livro
+    livro['quantidade'] -= 1
+
+    # Adicionando o livro ao histórico de livros emprestados do usuário
     usuario['livros_emprestados'].append(livro['id'])
+
+    # Registrando o empréstimo
     emprestimos.append({'usuario_id': id_usuario, 'livro_id': id_livro})
 
     return jsonify({
@@ -218,10 +255,22 @@ def alugar_livro_para_usuario(id_livro, id_usuario):
         'usuario': usuario
     })
 
+
+
+
+
+
+
 # Rota para listar usuários
 @app.route('/usuarios', methods=['GET'])
 def listar_usuarios():
     return jsonify(usuarios)
+
+
+
+
+
+
 
 # Rota para adicionar um usuário
 @app.route('/usuarios', methods=['POST'])
@@ -230,10 +279,63 @@ def adicionar_usuario():
     usuarios.append(novo_usuario)
     return jsonify(novo_usuario)
 
-# Rota para listar empréstimos
+
+
+# Mostrar emprestados 
 @app.route('/emprestimos', methods=['GET'])
-def listar_emprestimos():
-    return jsonify(emprestimos)
+def listar_todos_emprestimos():
+    livros_emprestados = [
+        {
+            "id": livro["id"],
+            "titulo": livro["titulo"],
+            "autor": livro.get("autor", "Autor desconhecido"),
+            "quantidadeEmprestada": livro.get("quantidadeEmprestada", 0),
+            "usuariosEmprestados": livro.get("usuariosEmprestados", [])
+        }
+        for livro in livros if livro.get("Emprestado")
+    ]
+
+    if livros_emprestados:
+        return jsonify(livros_emprestados), 200
+    else:
+        return jsonify({"mensagem": "Nenhum livro está emprestado atualmente."}), 200
+
+
+
+
+
+# Rota para devolver livros
+@app.route('/devolver-livro', methods=['PUT'])
+def devolver_livro():
+    data = request.get_json()
+    usuario_id = data.get('usuario_id')
+    livro_id = data.get('livro_id')
+
+    if not usuario_id or not livro_id:
+        return jsonify({'error': 'ID do usuário e do livro são obrigatórios'}), 400
+
+    # Verificar se o empréstimo existe
+    emprestimo = next((e for e in emprestimos if e['usuario_id'] == usuario_id and e['livro_id'] == livro_id), None)
+    
+    if emprestimo is None:
+        return jsonify({'error': 'Empréstimo não encontrado'}), 404
+
+    # Atualizar a quantidade de livros emprestados
+    livro = next((l for l in livros if l['id'] == livro_id), None)
+    
+    if livro:
+        livro['quantidadeEmprestada'] -= 1
+        # Remover o empréstimo
+        emprestimos.remove(emprestimo)
+        return jsonify({'message': 'Livro devolvido com sucesso!'}), 200
+    else:
+        return jsonify({'error': 'Livro não encontrado'}), 404
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
 
 
 
