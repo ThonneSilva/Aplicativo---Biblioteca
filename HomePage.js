@@ -45,23 +45,12 @@ export default function HomePage() {
           <Text style={styles.buttonText}>📦 Ver emprestados</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => navigation.navigate('RemoverLivro')}
-        >
-          <Text style={styles.buttonText}>❌ Remover livro</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={() => navigation.navigate('Usuarios')}
-        >
-          <Text style={styles.buttonText}>👥 Usuários</Text>
-        </TouchableOpacity>
+        {/* Removido o botão "Remover livro" */}
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   body: {
     flex: 1,
@@ -84,42 +73,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    width: '100%',
-    height: 'auto',
-    paddingBottom: 100,
-  },
-  bookItem: {
-    backgroundColor: '#2F2F2F',
-    padding: 12,
-    marginVertical: 8,
-    borderRadius: 4,
-  },
-  bookButton: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#E0E0E0',
-    textAlign: 'center',
-  },
-  detalhes: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: '#1C1C1C',
-    borderRadius: 4,
-  },
-  bookText: {
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  bookText2: {
-    fontSize: 16,
-    color: '#E0E0E0',
-  },
+
   buttonContainer: {
     width: '100%',
     padding: 16,
   },
+
   button: {
     backgroundColor: 'black',  // Fundo preto
     padding: 14,
@@ -131,17 +90,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
-  blackButton: {
-    backgroundColor: 'black', // Fundo preto
-    paddingVertical: 14,  // Mais espaçamento vertical
-    paddingHorizontal: 20,  // Mais espaçamento horizontal
-    borderRadius: 25,  // Bordas mais arredondadas
-    alignItems: 'center',
-    shadowColor: '#000', // Sombras para profundidade
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
+
   buttonText: {
     color: 'white', // Texto branco
     fontSize: 16,

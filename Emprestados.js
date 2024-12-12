@@ -1,123 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const BASE_URL = 'http://localhost:5001/emprestimos';  // URL para pegar todos os empréstimos
 
-export default function LivrosEmprestados() {
-  const [borrowedBooks, setBorrowedBooks] = useState([]);
-  const [loading, setLoading] = useState(true);  // Estado para controle de carregamento
-  const [error, setError] = useState(null);  // Estado para controle de erros
-  const navigation = useNavigation();
+const BASE_URL = 'http://localhost:5001';
 
-  // Buscar livros emprestados
+const getEmprestados = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/livros/emprestados`);
+      if (!response.ok) {
+        const errorData = await response.json(); // Tentar obter detalhes do erro da API
+        throw new Error(`Erro ao buscar livros emprestados: ${response.status} - ${JSON.stringify(errorData)}`);
+      }
+      const data = await response.json();
+      console.log('Dados retornados pela API:', data); // Log para inspecionar os dados
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar livros emprestados:', error);
+      throw error;
+    }
+};
+
+const VerEmprestados = () => {
+   const navigation = useNavigation();
+  const [livrosEmprestados, setLivrosEmprestados] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
-    const fetchBorrowedBooks = async () => {
+    const fetchEmprestados = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(BASE_URL);  // Requisição para obter todos os empréstimos
-        const books = await response.json();
-
-        if (response.ok) {
-          // Se a resposta for válida, verificar se a lista não está vazia
-          if (Array.isArray(books) && books.length > 0) {
-            setBorrowedBooks(books);
-          } else {
-            setError("Não há livros emprestados no momento.");
-          }
-        } else {
-          setError(books.mensagem || "Erro desconhecido ao carregar os livros.");
-        }
+        const livros = await getEmprestados();
+        setLivrosEmprestados(livros);
       } catch (error) {
-        console.error('Erro ao buscar livros emprestados:', error);
-        setError('Erro ao carregar os livros emprestados');
-      } finally {
-        setLoading(false);  // Atualiza o estado de carregamento
+          setError(error.message);
+         console.error('Erro ao carregar livros emprestados', error);
+      }finally {
+          setLoading(false);
       }
     };
 
-    fetchBorrowedBooks();
+    fetchEmprestados();
   }, []);
 
+   if (loading) {
+        return <Text>Carregando livros emprestados...</Text>;
+    }
+      if (error) {
+        return <Text>Erro ao carregar livros emprestados: {error}</Text>;
+    }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Livros Emprestados</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="green" />  // Indicador de carregamento enquanto busca
-      ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>  // Exibe mensagem de erro, se houver
-      ) : (
-        <ScrollView style={styles.bookList}>
-          {borrowedBooks.length > 0 ? (
-            borrowedBooks.map((book) => (
-              <View key={book.id} style={styles.bookItem}>
-                <Text style={styles.bookText}>Título: {book.titulo}</Text>
-                <Text style={styles.bookText}>Autor: {book.autor}</Text>
-                <Text style={styles.bookText}>
-                  Quantidade Emprestada: {book.quantidadeEmprestada || '0'}
-                </Text>
-                {/* Remova o campo de usuários emprestados se não houver */}
-                {/* <Text style={styles.bookText}>
-                  Emprestado para: {book.usuariosEmprestados?.length > 0 ? book.usuariosEmprestados.join(', ') : 'Nenhum usuário'}
-                </Text> */}
-              </View>
+       <View style={styles.container}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.backButton}>Voltar</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Livros Emprestados</Text>
+        <ScrollView>
+        {livrosEmprestados && livrosEmprestados.length === 0 ? (
+            <Text style={styles.noBooks}>Nenhum livro emprestado no momento.</Text>
+        ) : (
+            livrosEmprestados.map((livro) => (
+                <View key={livro.id} style={styles.bookContainer}>
+                    <Text style={styles.bookText}>Título: {livro.titulo}</Text>
+                    <Text style={styles.bookText}>Autor: {livro.autor}</Text>
+                    <Text style={styles.bookText}>Quantidade Emprestada: {livro.quantidadeEmprestada}</Text>
+                    <Text style={styles.bookText}>Usuários:</Text>
+                    {livro.usuariosEmprestados && livro.usuariosEmprestados.length === 0 ? (
+                        <Text style={styles.noUsers}>Nenhum usuário ainda.</Text>
+                    ) : (
+                       livro.usuariosEmprestados && livro.usuariosEmprestados.map((usuario, index) => (
+                         <Text key={index} style={styles.userText}>
+                           - {usuario.nome} ({usuario.anoNascimento})
+                         </Text>
+                       ))
+                     )}
+                </View>
             ))
-          ) : (
-            <Text style={styles.bookText}>Não há livros emprestados no momento.</Text>
-          )}
-        </ScrollView>
-      )}
-
-      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
-        <Text style={styles.buttonText}>Voltar</Text>
-      </TouchableOpacity>
+        )}
+    </ScrollView>
     </View>
   );
-}
-
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  bookList: {
-    marginVertical: 20,
-  },
-  bookItem: {
     backgroundColor: 'white',
+  },
+   backButton: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'blue',
+        marginBottom: 10
+    },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  bookContainer: {
     padding: 15,
-    marginVertical: 8,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 15,
+    borderRadius: 5,
   },
   bookText: {
     fontSize: 16,
-    color: '#333',
   },
-  button: {
-    backgroundColor: 'darkgreen',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+  userText: {
+    fontSize: 14,
+    marginLeft: 10,
   },
-  buttonText: {
-    color: 'white',
+  noBooks: {
     fontSize: 16,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 16,
+    color: 'gray',
     textAlign: 'center',
-    marginTop: 20,
+  },
+  noUsers: {
+    fontSize: 14,
+    color: 'gray',
+    marginLeft: 10,
   },
 });
+export default VerEmprestados;

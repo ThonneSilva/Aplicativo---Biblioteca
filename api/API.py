@@ -1,159 +1,37 @@
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+## Cors para não bugar a API 
 
 app = Flask(__name__)
 CORS(app)
 
-
+## Lista de livros em formato de Lista 
 
 livros = [
-    {
-        'id': 1,
-        'titulo': 'Dom Casmurro',
-        'autor': 'Machado de Assis',
-        'ano': '1899',
-        'quantidade': 2,
-    },
-
-    {
-        'id': 2,
-        'titulo': 'Memorias Postumas de Bras Cubas',
-        'autor': 'Machado de Assis',
-        'ano': '1881',
-        'quantidade': 3,
-
-    },
-
-    {
-        'id': 3,
-        'titulo': 'Grande Sertao: Veredas',
-        'autor': 'João Guimaes Rosa',
-        'ano': '1956',
-        'quantidade': 4,
-
-    },
-    {
-        'id': 5,
-        'titulo': 'O Cortiço',
-        'autor': 'Aluísio Azevedo',
-        'ano': '1890',
-        'quantidade': 4,
-
-    },
-
-    {
-        'id': 6,
-        'titulo': 'Iracema',
-        'autor': 'José de Alencar',
-        'ano': '1865',
-        'quantidade': 1,
-
-    },
-
-    {
-        'id': 7,
-        'titulo': 'Iracema',
-        'autor': 'José de Alencar',
-        'ano': '1865',
-        'quantidade': 1,
-
-    },
-
-    {
-        'id': 8,
-        'titulo': 'Macunaíma',
-        'autor': 'Mário de Andrade',
-        'ano': '1928',
-        'quantidade': 11,
-
-    },
-
-    {
-        'id': 9,
-        'titulo': 'Capitães da Areia',
-        'autor': 'Jorge Amado',
-        'ano': '1937',
-        'quantidade': 2,
-
-    },
-
-    {
-        'id': 10,
-        'titulo': 'Vidas Secas',
-        'autor': 'Graciliano Ramos',
-        'ano': '1938',
-        'quantidade': 9,
-
-    },
-
-     {
-        'id': 11,
-        'titulo': 'A Moreninha',
-        'autor': 'Joaquim Manuel de Macedo',
-        'ano': '1844',
-        'quantidade': 2,
-
-    },
-
-     {
-        'id': 12,
-        'titulo': 'O Tempo e o Vento',
-        'autor': 'Erico Verissimo',
-        'ano': '1949',
-        'quantidade': 1,
-
-    },
-
-    {
-        'id': 13,
-        'titulo': 'A Hora da Estrela',
-        'autor': 'Clarice Lispector',
-        'ano': '1977',
-        'quantidade': 1,
-
-    },
-    {
-        'id': 14,
-        'titulo': 'O Quinze',
-        'autor': ' Rachel de Queiroz',
-        'ano': '1930',
-        'quantidade': 1,
-
-    },
-     {
-        'id': 15,
-        'titulo': 'Menino do Engenho',
-        'autor': 'José Lins do Rego',
-        'ano': '1932',
-        'quantidade': 5,
-
-    },
-
-    {
-        'id': 16,
-        'titulo': 'Sagarana',
-        'autor': 'João Guimarães Rosa',
-        'ano': '1946',
-        'quantidade': 3,
-
-    },
-    {
-        'id': 17,
-        'titulo': 'Fogo Morto',
-        'autor': 'José Lins do Rego',
-        'ano': '1943',
-        'quantidade': 1,
-
-    },
-
+    {'id': 1, 'titulo': 'Dom Casmurro', 'autor': 'Machado de Assis', 'ano': '1899', 'quantidade': 2},
+    {'id': 2, 'titulo': 'Memorias Postumas de Bras Cubas', 'autor': 'Machado de Assis', 'ano': '1881', 'quantidade': 3},
+    {'id': 3, 'titulo': 'Grande Sertao: Veredas', 'autor': 'João Guimaes Rosa', 'ano': '1956', 'quantidade': 4},
+    {'id': 5, 'titulo': 'O Cortiço', 'autor': 'Aluísio Azevedo', 'ano': '1890', 'quantidade': 4},
+    {'id': 6, 'titulo': 'Iracema', 'autor': 'José de Alencar', 'ano': '1865', 'quantidade': 1},
+    {'id': 7, 'titulo': 'Iracema', 'autor': 'José de Alencar', 'ano': '1865', 'quantidade': 1},
+    {'id': 8, 'titulo': 'Macunaíma', 'autor': 'Mário de Andrade', 'ano': '1928', 'quantidade': 11},
+    {'id': 9, 'titulo': 'Capitães da Areia', 'autor': 'Jorge Amado', 'ano': '1937', 'quantidade': 2},
+    {'id': 10, 'titulo': 'Vidas Secas', 'autor': 'Graciliano Ramos', 'ano': '1938', 'quantidade': 9},
+    {'id': 11, 'titulo': 'A Moreninha', 'autor': 'Joaquim Manuel de Macedo', 'ano': '1844', 'quantidade': 2},
+    {'id': 12, 'titulo': 'O Tempo e o Vento', 'autor': 'Erico Verissimo', 'ano': '1949', 'quantidade': 1},
+    {'id': 13, 'titulo': 'A Hora da Estrela', 'autor': 'Clarice Lispector', 'ano': '1977', 'quantidade': 1},
+    {'id': 14, 'titulo': 'O Quinze', 'autor': 'Rachel de Queiroz', 'ano': '1930', 'quantidade': 1},
+    {'id': 15, 'titulo': 'Menino do Engenho', 'autor': 'José Lins do Rego', 'ano': '1932', 'quantidade': 5},
+    {'id': 16, 'titulo': 'Sagarana', 'autor': 'João Guimarães Rosa', 'ano': '1946', 'quantidade': 3},
+    {'id': 17, 'titulo': 'Fogo Morto', 'autor': 'José Lins do Rego', 'ano': '1943', 'quantidade': 1},
 ]
 
-#Rota mostrar a lista de livros cadastrados
+# Rota para mostrar a lista de livros cadastrados
 @app.route('/livros', methods=['GET'])
 def obter_livros():
     return jsonify(livros)
+
 
 
 
@@ -163,10 +41,12 @@ def consultar_livro_por_id(id):
     for livro in livros:
         if livro.get('id') == id:
             return jsonify(livro)
+        
 
 
 
-# Rota editar um livro na API
+
+# Rota para editar um livro
 @app.route('/livros/<int:id>', methods=['PUT'])
 def editar_livro_no_id(id):
     livro_alterado = request.get_json()
@@ -174,6 +54,10 @@ def editar_livro_no_id(id):
         if livro.get('id') == id:
             livros[indice].update(livro_alterado)
             return jsonify(livros[indice])
+        
+
+
+
 
 
 # Rota para adicionar um novo livro
@@ -183,39 +67,52 @@ def incluir_livro():
     livros.append(novo_livro)
     return jsonify(novo_livro), 201
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
 
 
-    ## rota para exlcuir um livro
-
+# Rota para excluir um livro
 @app.route('/livros/<int:id>', methods=['DELETE'])
 def excluir_livro(id):
     for indice, livro in enumerate(livros):
         if livro.get('id') == id:
             del livros[indice]
             return jsonify(livros)
+        
 
 
 
-# Emprestar livros
+# Rota para emprestar livros
 @app.route('/livros/alugar/<int:id_livro>', methods=['POST'])
 def alugar_livro(id_livro):
     livro = next((l for l in livros if l['id'] == id_livro), None)
-
-    # Verificar se o livro existe
     if not livro:
         return jsonify({'mensagem': 'Livro não encontrado.'}), 404
-
-    # Verificar se o livro está disponível
+    
     if livro['quantidade'] <= 0:
         return jsonify({'mensagem': 'Livro não disponível para empréstimo.'}), 400
+    
+    # Recebe os dados do usuário
+    nome_usuario = request.json.get('nome')
+    ano_nascimento_usuario = request.json.get('anoNascimento')
+    
+    if not nome_usuario or not ano_nascimento_usuario:
+        return jsonify({'mensagem': 'Nome e ano de nascimento do usuário são obrigatórios.'}), 400
 
-    # Atualizar quantidade disponível e marcar como emprestado
+    # Atualiza os dados do livro
     livro['quantidade'] -= 1
-    livro.setdefault('Emprestado', True)  # Marcar como emprestado
     livro.setdefault('quantidadeEmprestada', 0)
     livro['quantidadeEmprestada'] += 1
+
+    # Adiciona o usuário à lista de emprestados
+    if 'usuariosEmprestados' not in livro:
+        livro['usuariosEmprestados'] = []
+    
+    livro['usuariosEmprestados'].append({
+        'nome': nome_usuario,
+        'anoNascimento': ano_nascimento_usuario
+    })
+
+    # Marca o livro como emprestado se ainda não estiver marcado
+    livro.setdefault('Emprestado', True)
 
     return jsonify({
         'mensagem': 'Livro emprestado com sucesso.',
@@ -223,7 +120,8 @@ def alugar_livro(id_livro):
             'id': livro['id'],
             'titulo': livro['titulo'],
             'quantidadeDisponivel': livro['quantidade'],
-            'quantidadeEmprestada': livro['quantidadeEmprestada']
+            'quantidadeEmprestada': livro['quantidadeEmprestada'],
+            'usuariosEmprestados': livro['usuariosEmprestados']
         }
     }), 200
 
@@ -232,113 +130,49 @@ def alugar_livro(id_livro):
 
 
 
-
-
-
-
-    # Verificar se o usuário já tem este livro emprestado
-    if id_livro in usuario['livros_emprestados']:
-        return jsonify({'mensagem': 'Usuário já tem este livro emprestado.'}), 400
-
-    # Atualizando quantidade do livro
-    livro['quantidade'] -= 1
-
-    # Adicionando o livro ao histórico de livros emprestados do usuário
-    usuario['livros_emprestados'].append(livro['id'])
-
-    # Registrando o empréstimo
-    emprestimos.append({'usuario_id': id_usuario, 'livro_id': id_livro})
-
-    return jsonify({
-        'mensagem': f'Livro "{livro["titulo"]}" alugado com sucesso para {usuario["nome"]}.',
-        'livro': livro,
-        'usuario': usuario
-    })
-
-
-
-
-
-
-
-# Rota para listar usuários
-@app.route('/usuarios', methods=['GET'])
-def listar_usuarios():
-    return jsonify(usuarios)
-
-
-
-
-
-
-
-# Rota para adicionar um usuário
-@app.route('/usuarios', methods=['POST'])
-def adicionar_usuario():
-    novo_usuario = request.get_json()
-    usuarios.append(novo_usuario)
-    return jsonify(novo_usuario)
-
-
-
-# Mostrar emprestados 
-@app.route('/emprestimos', methods=['GET'])
-def listar_todos_emprestimos():
-    livros_emprestados = [
-        {
-            "id": livro["id"],
-            "titulo": livro["titulo"],
-            "autor": livro.get("autor", "Autor desconhecido"),
-            "quantidadeEmprestada": livro.get("quantidadeEmprestada", 0),
-            "usuariosEmprestados": livro.get("usuariosEmprestados", [])
-        }
-        for livro in livros if livro.get("Emprestado")
-    ]
-
-    if livros_emprestados:
-        return jsonify(livros_emprestados), 200
-    else:
-        return jsonify({"mensagem": "Nenhum livro está emprestado atualmente."}), 200
-
-
-
-
-
-# Rota para devolver livros
+# Rota para devolver o Livro 
 @app.route('/devolver-livro', methods=['PUT'])
 def devolver_livro():
     data = request.get_json()
-    usuario_id = data.get('usuario_id')
+    print(data)  
     livro_id = data.get('livro_id')
-
-    if not usuario_id or not livro_id:
-        return jsonify({'error': 'ID do usuário e do livro são obrigatórios'}), 400
-
-    # Verificar se o empréstimo existe
-    emprestimo = next((e for e in emprestimos if e['usuario_id'] == usuario_id and e['livro_id'] == livro_id), None)
-    
-    if emprestimo is None:
-        return jsonify({'error': 'Empréstimo não encontrado'}), 404
-
-    # Atualizar a quantidade de livros emprestados
+    if not livro_id:
+        return jsonify({'error': 'ID do livro é obrigatório'}), 400
     livro = next((l for l in livros if l['id'] == livro_id), None)
-    
     if livro:
         livro['quantidadeEmprestada'] -= 1
-        # Remover o empréstimo
-        emprestimos.remove(emprestimo)
+        livro['quantidade'] += 1
         return jsonify({'message': 'Livro devolvido com sucesso!'}), 200
     else:
         return jsonify({'error': 'Livro não encontrado'}), 404
 
+
+
+
+
+@app.route('/livros/emprestados', methods=['GET'])
+def livros_emprestados():
+    livros_emprestados = [
+        {
+            'id': livro['id'],
+            'titulo': livro['titulo'],
+            'autor': livro['autor'],
+            'quantidadeEmprestada': livro.get('quantidadeEmprestada', 0),
+            'usuariosEmprestados': livro.get('usuariosEmprestados', [])
+        }
+        for livro in livros if livro.get('quantidadeEmprestada', 0) > 0
+    ]
+    return jsonify(livros_emprestados), 200
+
+
+
+
+
+
+
+
+
+#Finalização da API 
+
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-
-
-
-
-#Rodar a API
-app.run(port=5001, host='localhost', debug=True)
+    app.run(debug=True, port=5001)
